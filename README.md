@@ -41,13 +41,6 @@ pip install -r requirements.txt
 CREATE DATABASE lms_db;
 ```
 Параметры подключения к БД:
-Параметры подключения к БД:
-NAME: lms_db
-USER: postgres
-PASSWORD: 12345
-HOST: 127.0.0.1
-PORT: 5432
-Выполните миграции:
 ```
 NAME: lms_db
 USER: postgres
