@@ -17,11 +17,12 @@ class Course(models.Model):
     )
 
     def __str__(self):
-        return f"Отзыв на курс {self.course.title} от {self.owner.username}"
+        return self.title
 
     class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
+        verbose_name = 'Курс'
+        verbose_name_plural = 'Курсы'
+
 
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
@@ -38,3 +39,19 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = 'Урок'
         verbose_name_plural = 'Уроки'
+
+
+class CourseSubscription(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             verbose_name='Пользователь', related_name='subscriptions')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE,
+                               verbose_name='Курс', related_name='subscriptions')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата подписки')
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        unique_together = ['user', 'course']
+
+    def __str__(self):
+        return f"{self.user.username} подписан на {self.course.title}"

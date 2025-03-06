@@ -12,4 +12,5 @@ urlpatterns = [
     path('lessons/<int:pk>/', LessonDetailView.as_view(), name='lesson-detail'),
     path('lessons/<int:pk>/update/', LessonUpdateView.as_view(), name='lesson-update'),
     path('lessons/<int:pk>/delete/', LessonDeleteView.as_view(), name='lesson-delete'),
-]
+    path('subscription/', CourseSubscriptionView.as_view(), name='course-subscription'),
+                ]
