@@ -54,4 +54,4 @@ class CourseSubscription(models.Model):
         unique_together = ['user', 'course']
 
     def __str__(self):
-        return f"{self.user.username} подписан на {self.course.title}"
+        return f"{self.user.email} подписан на {self.course.title}"

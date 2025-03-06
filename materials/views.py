@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 
 from .models import Course, CourseSubscription
 from .models import Lesson
+from .paginators import MaterialsPagination
 from .permissions import IsModerator, IsOwner, NotModerator, ModeratorOrOwner
 from .serializers import CourseSerializer, LessonSerializer
 
@@ -16,6 +17,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = MaterialsPagination
+
 
     def get_permissions(self):
         """Определяет права доступа для разных действий."""
@@ -56,6 +59,7 @@ class LessonUpdateView(generics.UpdateAPIView):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsOwner | IsModerator]
+    pagination_class = MaterialsPagination
 
 
 class LessonDeleteView(generics.DestroyAPIView):
