@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,7 +20,6 @@ class CourseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = MaterialsPagination
 
-
     def get_permissions(self):
         """Определяет права доступа для разных действий."""
         if self.action in ['create', 'destroy']:
@@ -30,18 +30,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer) -> None:
         """Сохраняет владельца при создании курса."""
-        serializer.save(owner=self.request.user)
-
-
-class LessonCreateView(generics.CreateAPIView):
-    """Контроллер для создания уроков."""
-
-    queryset = Lesson.objects.all()
-    serializer_class = LessonSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer) -> None:
-        """Сохраняет владельца при создании урока."""
         serializer.save(owner=self.request.user)
 
 
@@ -93,3 +81,26 @@ class CourseSubscriptionView(APIView):
             message = 'подписка добавлена'
 
         return Response({"message": message})
+
+
+# В файле views.py добавьте:
+
+class LessonListCreateView(generics.ListCreateAPIView):
+    """Контроллер для просмотра списка уроков и создания уроков."""
+    queryset = Lesson.objects.all()
+    serializer_class = LessonSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = MaterialsPagination
+
+    def perform_create(self, serializer):
+        """Сохраняет владельца при создании урока."""
+        serializer.save(owner=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(f"Validation errors: {serializer.errors}")
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

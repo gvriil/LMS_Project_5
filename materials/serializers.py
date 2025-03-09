@@ -1,5 +1,5 @@
-from rest_framework import serializers
-from .models import Course, Lesson
+from rest_framework import serializers, status
+from .models import Course, Lesson, CourseSubscription
 from .validators import validate_youtube_url
 
 
@@ -22,7 +22,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'preview', 'description', 'lessons_count', 'lessons', 'rating', 'is_subscribed']
+        fields = ['id', 'title', 'preview', 'description', 'lessons_count', 'lessons', 'rating', 'is_subscribed', 'is_owner']
         read_only_fields = ['owner']
 
     def get_is_subscribed(self, obj):
@@ -37,3 +37,14 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_is_owner(self, obj):
         return obj.owner == self.context['request'].user
+
+
+def test_course_serializer_data(self):
+    self.client.force_authenticate(user=self.user)
+    # Создаем подписку
+    CourseSubscription.objects.create(user=self.user, course=self.course)
+    url = f'/api/courses/{self.course.id}/'
+    response = self.client.get(url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertTrue(response.data['is_subscribed'])
+    self.assertEqual(response.data['lessons_count'], 1)
