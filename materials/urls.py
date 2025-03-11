@@ -1,19 +1,17 @@
-from django.urls import path, include
-from .views import (
-    CourseViewSet, LessonDetailView, LessonUpdateView,
-    LessonDeleteView, CourseSubscriptionView, LessonListCreateView
-)
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
-router.register(r'courses', CourseViewSet)
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('lessons/', LessonListCreateView.as_view(), name='lesson-list'),
-    path('lessons/<int:pk>/', LessonDetailView.as_view(), name='lesson-detail'),
-    path('lessons/<int:pk>/update/', LessonUpdateView.as_view(), name='lesson-update'),
-    path('lessons/<int:pk>/delete/', LessonDeleteView.as_view(), name='lesson-delete'),
-    path('course/subscription/', CourseSubscriptionView.as_view(), name='course-subscription'),
-]
+    # Маршруты для курсов (используйте существующие views)
+    path('courses/', views.CourseListCreateView.as_view(), name='course-list'),
+    path('courses/<int:pk>/', views.CourseDetailView.as_view(), name='course-detail'),
 
-urlpatterns += router.urls
+    # Маршруты для уроков
+    path('lessons/', views.LessonListCreateView.as_view(), name='lesson-list'),
+    path('lessons/<int:pk>/', views.LessonDetailView.as_view(), name='lesson-detail'),
+
+    # Платежные маршруты (сохраняем)
+    path('payment/create/', views.PaymentCreateView.as_view(), name='payment-create'),
+    path('payment/check-status/', views.PaymentStatusView.as_view(), name='payment-check-status'),
+    path('payment/', views.PaymentListView.as_view(), name='payment-list'),
+]

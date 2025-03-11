@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-
+from . import views
 from materials.models import Course, Lesson
 
 User = get_user_model()

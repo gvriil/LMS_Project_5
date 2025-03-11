@@ -11,6 +11,8 @@ class Course(models.Model):
     description = models.TextField(verbose_name='Описание')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                               verbose_name='Владелец курса', **NULLABLE)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='цена')
+
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name='Оценка', default=0
@@ -55,3 +57,30 @@ class CourseSubscription(models.Model):
 
     def __str__(self):
         return f"{self.user.email} подписан на {self.course.title}"
+
+
+class Payment(models.Model):
+    """Модель платежа"""
+
+    PAYMENT_STATUS = (
+        ('created', 'Создан'),
+        ('succeeded', 'Оплачен'),
+        ('canceled', 'Отменен'),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='materials_payments')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='materials_payments')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
+    payment_link = models.URLField(verbose_name="Ссылка на оплату", **NULLABLE)
+    session_id = models.CharField(max_length=150, verbose_name="ID сессии Stripe", **NULLABLE)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="created",
+                              verbose_name="Статус платежа")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    def __str__(self):
+        return f"Платеж {self.id} - {self.course.title}"
+
+    class Meta:
+        verbose_name = "Платеж"
+        verbose_name_plural = "Платежи"

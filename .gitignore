@@ -32,3 +32,6 @@ media/
 .vscode/
 .venv/
 venv/
+.env
+
+static/

@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import Payment
-
+from materials.models import Payment
 User = get_user_model()
 
 

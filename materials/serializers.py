@@ -48,3 +48,11 @@ def test_course_serializer_data(self):
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertTrue(response.data['is_subscribed'])
     self.assertEqual(response.data['lessons_count'], 1)
+
+from rest_framework import serializers
+from .models import Payment
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = '__all__'
