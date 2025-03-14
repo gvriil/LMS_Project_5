@@ -17,6 +17,7 @@ class Course(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name='Оценка', default=0
     )
+    last_notification_sent = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title

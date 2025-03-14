@@ -11,3 +11,6 @@ stripe==7.6.0
 drf-yasg==1.21.7
 python-decouple==3.8
 python-dotenv==1.0.0
+celery==5.3.6
+redis==5.0.1
+django-celery-beat==2.5.0

@@ -1,6 +1,8 @@
 import datetime
+from datetime import timedelta
 
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets
@@ -18,6 +20,7 @@ from .serializers import CourseSerializer, LessonSerializer
 from .services import create_stripe_product, create_stripe_price, create_stripe_session, \
     get_session_status
 from .services import retrieve_stripe_session
+from .tasks import send_course_update_notification
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -56,6 +59,21 @@ class LessonUpdateView(generics.UpdateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsOwner | IsModerator]
     pagination_class = MaterialsPagination
+
+    def perform_update(self, serializer):
+        lesson = serializer.save()
+
+        # Получаем связанный курс
+        course = lesson.course
+        four_hours_ago = timezone.now() - timedelta(hours=4)
+
+        # Проверка времени последнего уведомления
+        if not course.last_notification_sent or course.last_notification_sent < four_hours_ago:
+            course.last_notification_sent = timezone.now()
+            course.save(update_fields=['last_notification_sent'])
+
+            # Запускаем асинхронную рассылку
+            send_course_update_notification.delay(course.id, course.title)
 
 
 class LessonDeleteView(generics.DestroyAPIView):
@@ -339,3 +357,32 @@ class PaymentStatusCheckView(APIView):
         except Exception as e:
             return Response({"error": f"Произошла ошибка: {str(e)}"},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class CourseListCreateView(generics.ListCreateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def perform_update(self, serializer):
+        course = self.get_object()
+        four_hours_ago = timezone.now() - timedelta(hours=4)
+
+        # Сохраняем обновленный курс
+        updated_course = serializer.save()
+
+        # Проверка на время последнего уведомления
+        if not course.last_notification_sent or course.last_notification_sent < four_hours_ago:
+            # Обновляем время последнего уведомления
+            updated_course.last_notification_sent = timezone.now()
+            updated_course.save(update_fields=['last_notification_sent'])
+
+            # Запускаем асинхронную задачу рассылки
+            send_course_update_notification.delay(updated_course.id, updated_course.title)
